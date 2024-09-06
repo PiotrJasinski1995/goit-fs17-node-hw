@@ -13,7 +13,6 @@ const router = express.Router();
 const joiValidationSchema = Joi.object().keys({
   name: Joi.string()
     .min(3)
-    .max(10)
     .required()
     .error((errors) => {
       errors.forEach((err) => {
@@ -26,9 +25,6 @@ const joiValidationSchema = Joi.object().keys({
             break;
           case "string.min":
             err.message = `Name should have at least ${err.local.limit} characters!`;
-            break;
-          case "string.max":
-            err.message = `Name should have at most ${err.local.limit} characters!`;
             break;
           default:
             break;
