@@ -2,16 +2,26 @@ const service = require("../service/contacts");
 const joiValidationSchema = require("./schemas/contacts");
 
 const get = async (req, res, next) => {
+  const page = 0;
+
+  // default page = 1, default limit = 10
+  const pageOptions = {
+    page: parseInt(req.query.page, 10) || 1,
+    limit: parseInt(req.query.limit, 10) || 10,
+  };
+
+  const favorite = req.query.favorite;
+
   try {
-    const contacts = await service.listContacts();
+    const contacts = await service.listContacts(
+      pageOptions.page,
+      pageOptions.limit,
+      favorite
+    );
     res.json({ status: "success", code: 200, data: { contacts } });
   } catch (error) {
-    if (error.name === "CastError") {
-      res.json({ status: "failure", code: 404, message: "Invalid ID format" });
-    } else {
-      console.error(error);
-      next(error);
-    }
+    console.error(error);
+    next(error);
   }
 };
 
