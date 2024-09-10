@@ -76,10 +76,12 @@ const login = async (req, res, next) => {
       }
 
       const subscription = activeUser.subscription;
+      const tokenVersion = activeUser.tokenVersion;
 
       const payload = {
         id: activeUser.id,
         subscription,
+        tokenVersion,
       };
 
       const token = jwt.sign(payload, secret, { expiresIn: "1h" });
@@ -109,10 +111,13 @@ const logout = async (req, res, next) => {
   const user = req.user;
 
   try {
-    await User.updateOne({ _id: user._id }, { $set: { token: null } });
+    await User.updateOne(
+      { _id: user._id },
+      { $set: { token: null }, $inc: { tokenVersion: 1 } }
+    );
     res.json({
       status: "success",
-      code: 204,
+      code: 200,
       message: `User ${user.email} logged out`,
     });
   } catch (error) {

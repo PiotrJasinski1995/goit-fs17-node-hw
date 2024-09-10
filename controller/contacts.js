@@ -16,7 +16,8 @@ const get = async (req, res, next) => {
     const contacts = await service.listContacts(
       pageOptions.page,
       pageOptions.limit,
-      favorite
+      favorite,
+      req.user._id
     );
     res.json({ status: "success", code: 200, data: { contacts } });
   } catch (error) {
@@ -29,7 +30,7 @@ const getById = async (req, res, next) => {
   const { contactId } = req.params;
 
   try {
-    const contact = await service.getContactById(contactId);
+    const contact = await service.getContactById(contactId, req.user._id);
 
     if (contact) {
       res.json({ status: "success", code: 200, data: { contact } });
@@ -48,6 +49,7 @@ const getById = async (req, res, next) => {
 
 const create = async (req, res, next) => {
   const schema = joiValidationSchema;
+  const user = req.user;
 
   try {
     const validationResult = schema.validate(req.body, {
@@ -61,7 +63,9 @@ const create = async (req, res, next) => {
 
       res.json({ status: "failure", code: 400, message: error_messages });
     } else {
-      const contact = await service.addContact(req.body);
+      const contactBody = req.body;
+      contactBody.owner = req.user._id;
+      const contact = await service.addContact(contactBody);
       res.json({ status: "success", code: 201, data: { contact } });
     }
   } catch (error) {
@@ -90,7 +94,9 @@ const update = async (req, res, next) => {
 
       res.json({ status: "failure", code: 400, message: error_messages });
     } else {
-      const contact = await service.updateContact(contactId, req.body);
+      const contactBody = req.body;
+      contactBody.owner = req.user._id;
+      const contact = await service.updateContact(contactId, contactBody);
 
       if (contact) {
         res.json({ status: "success", code: 200, data: { contact } });
@@ -121,7 +127,9 @@ const updateStatus = async (req, res, next) => {
         message: "Missing required field: 'favorite'",
       });
     } else {
-      const contact = await service.updateContact(contactId, { favorite });
+      const contactBody = { favorite };
+      contactBody.owner = req.user._id;
+      const contact = await service.updateContact(contactId, contactBody);
 
       if (contact) {
         res.json({ status: "success", code: 200, data: { contact } });
@@ -143,7 +151,7 @@ const remove = async (req, res, next) => {
   const { contactId } = req.params;
 
   try {
-    const contact = await service.removeContact(contactId);
+    const contact = await service.removeContact(contactId, req.user._id);
 
     if (contact) {
       res.json({

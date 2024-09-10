@@ -23,6 +23,10 @@ const userSchema = new Schema(
       type: String,
       default: null,
     },
+    tokenVersion: {
+      type: Number,
+      default: 0,
+    },
   },
   { versionKey: false }
 );
