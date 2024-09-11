@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const jwtCheck = require("jwt-check-expiration");
 const joiValidationSchema = require("./schemas/users");
 
 const User = require("../service/schemas/user");
@@ -71,6 +72,19 @@ const login = async (req, res, next) => {
           status: "error",
           code: 400,
           message: "Incorrect login or password",
+          data: "Bad request",
+        });
+      }
+
+      console.log();
+      if (
+        activeUser.token !== null &&
+        !jwtCheck.isJwtExpired(activeUser.token)
+      ) {
+        return res.status(403).json({
+          status: "error",
+          code: 403,
+          message: "User already logged in",
           data: "Bad request",
         });
       }
