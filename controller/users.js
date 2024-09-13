@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
 const jwtCheck = require("jwt-check-expiration");
-const joiValidationSchema = require("./schemas/users");
+const gravatar = require("gravatar");
 
+const joiValidationSchema = require("./schemas/users");
 const User = require("../service/schemas/user");
 const secret = process.env.SECRET;
 
@@ -30,8 +31,9 @@ const signUp = async (req, res, next) => {
       });
     }
     try {
+      const avatarURL = gravatar.url(email);
       const subscription = "starter";
-      const newUser = new User({ email, subscription });
+      const newUser = new User({ email, subscription, avatarURL });
       newUser.setPassword(password);
       await newUser.save();
       const user = { email, subscription };
