@@ -1,9 +1,11 @@
 const jwt = require("jsonwebtoken");
 const jwtCheck = require("jwt-check-expiration");
 const gravatar = require("gravatar");
+const { nanoid } = require("nanoid");
 
 const joiValidationSchema = require("./schemas/users");
 const User = require("../service/schemas/user");
+const { sendVerification } = require("../utils/email");
 const secret = process.env.SECRET;
 
 const signUp = async (req, res, next) => {
@@ -33,9 +35,18 @@ const signUp = async (req, res, next) => {
     try {
       const avatarURL = gravatar.url(email);
       const subscription = "starter";
-      const newUser = new User({ email, subscription, avatarURL });
+      const verificationToken = nanoid();
+      const newUser = new User({
+        email,
+        subscription,
+        avatarURL,
+        verificationToken,
+      });
       newUser.setPassword(password);
       await newUser.save();
+
+      sendVerification(newUser);
+
       const user = { email, subscription };
       res.status(201).json({
         status: "success",
@@ -198,4 +209,72 @@ const updateSubscription = async (req, res, next) => {
   }
 };
 
-module.exports = { signUp, login, logout, getCurrent, updateSubscription };
+const verifyEmail = async (req, res) => {
+  try {
+    const { verificationToken } = req.params;
+
+    if (!verificationToken)
+      return res.status(404).json({ message: "User not found" });
+
+    const verifiedUser = await User.findOne({ verificationToken });
+
+    if (verifiedUser) {
+      verifiedUser.verificationToken = null;
+      verifiedUser.verify = true;
+
+      await verifiedUser.save();
+
+      const user = {
+        email: verifiedUser.email,
+        subscription: verifiedUser.subscription,
+        verificationToken: verifiedUser.verificationToken,
+        verify: verifiedUser.verify,
+      };
+
+      res.json({
+        status: "success",
+        code: 200,
+        message: "Verification successful",
+        user,
+      });
+    } else {
+      return res.status(404).json({ message: "User not found" });
+    }
+  } catch (error) {
+    console.error("Registration error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+const resendVerifyEmail = async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  if (user.verify) {
+    return res
+      .status(400)
+      .json({ message: "Verification has already been passed" });
+  }
+
+  sendVerification(user);
+  res.json({
+    status: "success",
+    code: 200,
+    email,
+    message: "Verification email sent",
+  });
+};
+
+module.exports = {
+  signUp,
+  login,
+  logout,
+  getCurrent,
+  updateSubscription,
+  verifyEmail,
+  resendVerifyEmail,
+};
