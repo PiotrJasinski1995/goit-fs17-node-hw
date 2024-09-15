@@ -43,19 +43,28 @@ const signUp = async (req, res, next) => {
         verificationToken,
       });
       newUser.setPassword(password);
-      await newUser.save();
 
-      sendVerification(newUser);
+      try {
+        await sendVerification(newUser);
 
-      const user = { email, subscription };
-      res.status(201).json({
-        status: "success",
-        code: 201,
-        message: "Registration successful",
-        data: {
-          user,
-        },
-      });
+        await newUser.save();
+
+        const user = { email, subscription, avatarURL };
+        res.status(201).json({
+          status: "success",
+          code: 201,
+          message: "Registration successful",
+          data: {
+            user,
+          },
+        });
+      } catch (err) {
+        return res.status(500).json({
+          status: "error",
+          code: 500,
+          message: "Problem with sending an email",
+        });
+      }
     } catch (error) {
       next(error);
     }
@@ -89,7 +98,6 @@ const login = async (req, res, next) => {
         });
       }
 
-      console.log();
       if (
         activeUser.token !== null &&
         !jwtCheck.isJwtExpired(activeUser.token)
@@ -102,8 +110,18 @@ const login = async (req, res, next) => {
         });
       }
 
+      if (!activeUser.verify) {
+        return res.status(403).json({
+          status: "error",
+          code: 403,
+          message: "User not verified",
+          data: "Bad request",
+        });
+      }
+
       const subscription = activeUser.subscription;
       const tokenVersion = activeUser.tokenVersion;
+      const avatarUrl = activeUser.avatarURL;
 
       const payload = {
         id: activeUser.id,
@@ -117,7 +135,7 @@ const login = async (req, res, next) => {
         { $set: { token } },
         { runValidators: true }
       );
-      const user = { email, subscription };
+      const user = { email, subscription, avatarUrl };
 
       res.json({
         status: "success",

@@ -15,7 +15,7 @@ const uploadAvatar = async (req, res) => {
     }
 
     const jimpImage = await Jimp.read(avatarFile.path);
-    jimpImage.resize({ w: 100, h: 100 });
+    jimpImage.resize({ w: 250, h: 250 });
     await jimpImage.write(path.join(avatarDir, avatarFile.filename));
 
     const fileName = `${userId}-${Date.now()}${path.extname(

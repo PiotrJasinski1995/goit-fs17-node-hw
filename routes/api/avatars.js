@@ -10,7 +10,7 @@ const auth = require("../../middlewares/auth");
 const tempDir = path.join(__dirname, "../../tmp");
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (_req, _file, cb) => {
     cb(null, tempDir);
   },
   filename: (_req, file, cb) => {

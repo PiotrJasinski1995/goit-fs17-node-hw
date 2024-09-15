@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 
-const sendVerification = (user) => {
+const sendVerification = async (user) => {
   const transporter = nodemailer.createTransport({
     host: "smtp.mailgun.org",
     port: 587,
@@ -13,7 +13,7 @@ const sendVerification = (user) => {
 
   const emailOptions = {
     from: "Verification Bot <verification@gmail.com>", // sender address
-    to: "siny955@wp.pl", // list of receivers
+    to: user.email, // list of receivers
     subject: "Verify email", // Subject line
     html: `
       <p>Hello,</p>
@@ -23,13 +23,11 @@ const sendVerification = (user) => {
     `, // html body
   };
 
-  transporter.sendMail(emailOptions, (error, info) => {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log("Verification email send");
-    }
-  });
+  try {
+    await transporter.sendMail(emailOptions);
+  } catch (error) {
+    throw error;
+  }
 };
 
 module.exports = { sendVerification };
