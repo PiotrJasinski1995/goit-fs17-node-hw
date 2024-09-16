@@ -16,7 +16,7 @@ const signUp = async (req, res, next) => {
   });
 
   if (validationResult.error) {
-    error_messages = validationResult.error.details.map(
+    const error_messages = validationResult.error.details.map(
       (error) => error.message
     );
 
@@ -79,7 +79,7 @@ const login = async (req, res, next) => {
   });
 
   if (validationResult.error) {
-    error_messages = validationResult.error.details.map(
+    const error_messages = validationResult.error.details.map(
       (error) => error.message
     );
 
