@@ -15,4 +15,8 @@ router.get("/current", auth, ctrlUser.getCurrent);
 
 router.patch("/", auth, ctrlUser.updateSubscription);
 
+router.get("/verify/:verificationToken", ctrlUser.verifyEmail);
+
+router.post("/verify", ctrlUser.resendVerifyEmail);
+
 module.exports = router;

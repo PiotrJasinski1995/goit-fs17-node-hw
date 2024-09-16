@@ -57,7 +57,7 @@ const create = async (req, res, next) => {
     });
 
     if (validationResult.error) {
-      error_messages = validationResult.error.details.map(
+      const error_messages = validationResult.error.details.map(
         (error) => error.message
       );
 
@@ -88,7 +88,7 @@ const update = async (req, res, next) => {
     });
 
     if (validationResult.error) {
-      error_messages = validationResult.error.details.map(
+      const error_messages = validationResult.error.details.map(
         (error) => error.message
       );
 
